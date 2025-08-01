@@ -76,9 +76,33 @@ pnpm format:write
 4. **URL Fragment Keys**: Encryption keys are stored in URL fragments (#key) for client-side access
 5. **SSG Architecture**: Secret pages use generateStaticParams() for optimal performance
 
+## Caching Strategy
+
+### Secret Persistence Behavior
+- **getSecret endpoint**: Configured with `staleTime: Infinity` and `gcTime: Infinity`
+- **Cache pre-population**: When creating secrets, ciphertext is immediately cached to prevent owner from consuming their own secret
+- **Cross-session persistence**: Uses `@tanstack/query-async-storage-persister` with localStorage
+- **Cache key format**: TanStack Query keys + `secret_${id}` in localStorage for metadata
+- **No refetching**: All refetch options disabled (`refetchOnMount`, `refetchOnWindowFocus`, etc.)
+
+### Cache Population Points
+1. **Secret creation**: Owner's cache pre-populated in `SecretForm` component
+2. **First viewing**: Recipient's cache populated after server fetch in `SecretViewer`
+3. **Page refresh**: Both owner and recipient load from cache, no server calls
+
+## TanStack Query Setup
+
+### Query Client Architecture
+- **Single source**: `src/trpc/query-client.ts` serves both server and client
+- **Server behavior**: Creates fresh QueryClient for each request, no persistence
+- **Client behavior**: Singleton pattern with localStorage persistence via `createAsyncStoragePersister`
+- **Hydration**: Shared configuration ensures proper SSR/client hydration
+- **Modern patterns**: Uses `@tanstack/query-async-storage-persister` (not deprecated `createSyncStoragePersister`)
+
 ## Security Notes
 
 - Encryption keys never leave the client browser
 - Server only stores encrypted ciphertext, never plaintext
 - Secrets are deleted immediately upon first access
 - Base64url encoding used for URL-safe key transmission
+- Local cache only stores encrypted ciphertext, never plaintext or keys
