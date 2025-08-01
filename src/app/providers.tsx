@@ -1,5 +1,7 @@
 "use client";
 
+import { ThemeProvider } from "~/components/theme-provider";
+import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 
 interface ProvidersProps {
@@ -8,8 +10,16 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <TRPCReactProvider>
-      {children}
-    </TRPCReactProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <TRPCReactProvider>
+        {children}
+        <Toaster />
+      </TRPCReactProvider>
+    </ThemeProvider>
   );
 }

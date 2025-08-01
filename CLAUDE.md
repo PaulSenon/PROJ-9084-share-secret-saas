@@ -106,3 +106,119 @@ pnpm format:write
 - Secrets are deleted immediately upon first access
 - Base64url encoding used for URL-safe key transmission
 - Local cache only stores encrypted ciphertext, never plaintext or keys
+
+## Architecture Diagram
+
+```mermaid
+graph TB
+    %% Client Side (Creator)
+    C1[👤 Creator] --> |1. Enter secret| F1[🔒 AES-256-GCM<br/>Encryption<br/>in Browser]
+    F1 --> |2. Generate key| K1[🔑 Encryption Key<br/>stays in browser]
+    F1 --> |3. Encrypted data| API1[📡 tRPC API Call]
+    
+    %% Server Side
+    API1 --> |4. Store ciphertext| S[🖥️ Next.js Server<br/>tRPC Router]
+    S --> |5. Save to DB| DB[(🗄️ Convex Database<br/>Encrypted payload only)]
+    DB --> |6. Return ID| S
+    S --> |7. Secret ID| API1
+    
+    %% URL Generation
+    API1 --> |8. Create URL| URL[📋 Shareable URL<br/>domain.com/secretId#key]
+    K1 --> |Key in fragment| URL
+    
+    %% Local Caching (Creator)
+    F1 --> |Cache encrypted| LC1[💾 Creator's<br/>Local Cache<br/>encrypted data]
+    
+    %% Client Side (Recipient)
+    C2[👥 Recipient] --> |9. Open URL| B2[🌐 Browser extracts<br/>key from #fragment]
+    B2 --> |10. Fetch request| API2[📡 tRPC API Call<br/>with secret ID]
+    
+    %% Server deletion
+    API2 --> S2[🖥️ Server fetches<br/>& deletes from DB]
+    DB --> |Read & DELETE| S2
+    S2 --> |11. Return ciphertext| API2
+    
+    %% Client decryption
+    API2 --> |12. Encrypted data| F2[🔓 AES-256-GCM<br/>Decryption<br/>in Browser]
+    B2 --> |Key from URL| F2
+    F2 --> |13. Decrypted secret| C2
+    
+    %% Local Caching (Recipient)
+    F2 --> |Cache encrypted| LC2[💾 Recipient's<br/>Local Cache<br/>encrypted data]
+    
+    %% Subsequent access
+    LC1 -.-> |Future access<br/>No server calls| C1
+    LC2 -.-> |Future access<br/>No server calls| C2
+    
+    %% Styling
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef server fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef database fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef crypto fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef cache fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    
+    class C1,C2,B2 client
+    class S,S2,API1,API2 server
+    class DB database
+    class F1,F2,K1 crypto
+    class LC1,LC2 cache
+```
+
+## Detailed Process Description for Diagram Generation
+
+### SecretShare Application - Complete Process Flow
+
+**Application Overview:**
+SecretShare is a zero-knowledge, ephemeral secret-sharing web application that enables users to securely share sensitive information through encrypted, one-time-access URLs. The application ensures that secrets are encrypted client-side before transmission and automatically deleted after first access.
+
+**Visual Process Flow Description:**
+
+**Phase 1: Secret Creation (Creator Side)**
+1. **User Interaction**: A person (Creator) sits at their computer/device and types a secret message into a web form on the SecretShare homepage
+2. **Client-Side Encryption**: The browser automatically generates a 256-bit AES-GCM encryption key and encrypts the secret locally (show encryption happening inside the browser with lock/key icons)
+3. **Data Transmission**: Only the encrypted ciphertext is sent to the server via a secure HTTPS connection (show encrypted data packets traveling to server)
+4. **Server Processing**: The Next.js server receives the encrypted data through tRPC API and stores it in the Convex database (server never sees plaintext)
+5. **Database Storage**: The database stores only the encrypted payload with a unique secret ID (show database with locked/encrypted entries)
+6. **URL Generation**: The server returns the secret ID, and the browser creates a shareable URL with the encryption key embedded in the URL fragment (#key)
+7. **Local Caching**: The creator's browser caches the encrypted secret locally for preview purposes
+
+**Phase 2: Secret Sharing**
+8. **URL Sharing**: The creator copies and shares the generated URL through their preferred communication method (email, messaging, etc.)
+9. **URL Structure**: Show the URL format: `https://secretshare.app/abc123#encryptionkey` where the key after # never reaches the server
+
+**Phase 3: Secret Retrieval (Recipient Side)**
+10. **URL Access**: The recipient clicks/opens the shared URL in their browser
+11. **Key Extraction**: The recipient's browser automatically extracts the encryption key from the URL fragment (after the #)
+12. **Server Request**: The browser makes a request to the server using only the secret ID (not the key)
+13. **Server Response & Deletion**: The server fetches the encrypted data from the database and immediately deletes it (one-time access)
+14. **Client-Side Decryption**: The recipient's browser uses the key from the URL to decrypt the secret locally
+15. **Secret Display**: The decrypted secret is displayed to the recipient with reveal/hide functionality
+16. **Local Caching**: The recipient's browser also caches the encrypted secret locally
+
+**Phase 4: Subsequent Access**
+17. **Offline Access**: Both creator and recipient can revisit the URL and access the secret from their local browser cache without any server communication
+18. **Server State**: The server database no longer contains the secret data after first access
+
+**Key Visual Elements to Include:**
+- **Browser Icons**: Show distinct browsers for creator and recipient
+- **Encryption Symbols**: Lock/unlock icons, key symbols, encrypted data representation
+- **Server Architecture**: Next.js server, tRPC API layer, Convex database
+- **Data Flow Arrows**: Clear directional arrows showing data movement
+- **Security Indicators**: Shields, locks, "HTTPS" labels, "ENCRYPTED" badges
+- **Cache Representations**: Local storage icons in browsers
+- **Deletion Animation**: Show data being deleted from server after first access
+- **URL Structure**: Visual representation of URL with fragment highlighted
+
+**Security Emphasis Points:**
+- Keys never leave the browser
+- Server only sees encrypted data
+- Automatic deletion after first access
+- Zero-knowledge architecture
+- Local caching for performance and offline access
+
+**Color Coding Suggestions:**
+- Blue: Client-side operations
+- Purple: Server-side operations  
+- Green: Database operations
+- Orange: Encryption/decryption processes
+- Pink: Local caching operations

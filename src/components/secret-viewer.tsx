@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AlertCircle, Check, Copy, Eye, EyeOff, Lock, Loader2, Shield, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
+import { Separator } from "~/components/ui/separator";
+
 import { importKeyAndDecrypt } from "~/lib/crypto";
 import { useSecret } from "~/hooks/use-secret";
 
@@ -19,6 +27,7 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
     message: "Loading secret...",
   });
   const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   
   const { data: ciphertext, isLoading, error, isCached } = useSecret(secretId);
 
@@ -79,98 +88,154 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
     }
   };
 
-  const copyToClipboard = async () => {
+  const hideSecret = () => {
     if (state.type === "ready") {
-      await navigator.clipboard.writeText(state.text);
-      // You could add a toast notification here
+      setState({ ...state, isRevealed: false });
     }
   };
 
+  const copyToClipboard = async () => {
+    if (state.type === "ready") {
+      try {
+        await navigator.clipboard.writeText(state.text);
+        setCopied(true);
+        toast.success("Secret copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        toast.error("Failed to copy to clipboard");
+      }
+    }
+  };
+
+  if (state.type === "loading") {
+    return (
+      <Card className="w-full max-w-2xl">
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">{state.message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (state.type === "error") {
+    return (
+      <Card className="w-full max-w-2xl border-destructive">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <CardTitle className="text-destructive">Access Error</CardTitle>
+          <CardDescription>{state.message}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg bg-muted p-4">
+            <div className="flex items-start gap-3">
+              <X className="mt-0.5 h-4 w-4 text-destructive flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Possible reasons:</p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Secret has already been accessed and deleted</li>
+                  <li>• Invalid or corrupted URL</li>
+                  <li>• Secret has expired or was manually deleted</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
-      {state.type === "loading" && (
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-          <p className="text-gray-600">{state.message}</p>
+    <Card className="w-full max-w-2xl">
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+          <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
         </div>
-      )}
-
-      {state.type === "error" && (
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-            <svg
-              className="h-5 w-5 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
-          <h2 className="mb-2 text-xl font-semibold text-red-600">Error</h2>
-          <p className="text-gray-600">{state.message}</p>
+        <CardTitle className="text-green-600 dark:text-green-400">
+          Secret Retrieved Successfully
+        </CardTitle>
+        <CardDescription>
+          {isCached 
+            ? "This secret was loaded from your local cache and decrypted in your browser."
+            : "This secret has been retrieved from the server, deleted, and decrypted locally in your browser."
+          }
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            <Lock className="mr-1 h-3 w-3" />
+            Client-side decrypted
+          </Badge>
+          {isCached ? (
+            <Badge variant="outline" className="text-xs">
+              Cached locally
+            </Badge>
+          ) : (
+            <Badge variant="destructive" className="text-xs">
+              Deleted from server
+            </Badge>
+          )}
         </div>
-      )}
 
-      {state.type === "ready" && (
-        <div className="space-y-4">
-          <div className="text-center">
-            <h2 className="mb-2 text-xl font-semibold text-green-600">
-              Secret Retrieved
-            </h2>
-            <p className="text-sm text-gray-600">
-              {isCached 
-                ? "This secret was loaded from your local cache and decrypted in your browser."
-                : "This secret has been deleted from the server and decrypted locally in your browser."
-              }
-            </p>
-          </div>
+        <Separator />
 
-          <div className="rounded-md bg-gray-50 p-4">
+        <div>
+          <div className="rounded-lg border bg-card">
             {state.isRevealed ? (
-              <p className="break-words whitespace-pre-wrap text-gray-900">
-                {state.text}
-              </p>
+              <div className="p-4">
+                <pre className="whitespace-pre-wrap break-words text-sm font-mono">
+                  {state.text}
+                </pre>
+              </div>
             ) : (
-              <div className="text-center">
-                <div className="mb-4 flex h-20 items-center justify-center rounded bg-gray-300">
-                  <p className="text-sm text-gray-600">
-                    Secret is hidden - click to reveal
-                  </p>
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                  <EyeOff className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <button
-                  onClick={revealSecret}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-                >
+                <p className="mb-4 text-sm text-muted-foreground text-center">
+                  Secret is hidden for privacy. Click below to reveal the content.
+                </p>
+                <Button onClick={revealSecret} size="lg">
+                  <Eye className="mr-2 h-4 w-4" />
                   Reveal Secret
-                </button>
+                </Button>
               </div>
             )}
           </div>
-
-          {state.isRevealed && (
-            <div className="flex gap-2">
-              <button
-                onClick={copyToClipboard}
-                className="flex-1 rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
-              >
-                Copy to Clipboard
-              </button>
-              <button
-                onClick={() => setState({ ...state, isRevealed: false })}
-                className="flex-1 rounded-md bg-gray-500 px-4 py-2 text-white transition-colors hover:bg-gray-600"
-              >
-                Hide Secret
-              </button>
-            </div>
-          )}
         </div>
-      )}
-    </div>
+
+        {state.isRevealed && (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={copyToClipboard} variant="default" size="lg" className="flex-1">
+              {copied ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Secret
+                </>
+              )}
+            </Button>
+            <Button onClick={hideSecret} variant="outline" size="lg" className="flex-1">
+              <EyeOff className="mr-2 h-4 w-4" />
+              Hide Secret
+            </Button>
+          </div>
+        )}
+
+        <Separator />
+
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <Lock className="h-3 w-3" />
+          <span>This secret has been permanently deleted from our servers</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
