@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "~/trpc/react";
 import { importKeyAndDecrypt } from "~/lib/crypto";
+import { useSecret } from "~/hooks/use-secret";
 
 interface SecretViewerProps {
   secretId: string;
@@ -16,9 +16,11 @@ type ViewState =
 export function SecretViewer({ secretId }: SecretViewerProps) {
   const [state, setState] = useState<ViewState>({
     type: "loading",
-    message: "Fetching encrypted payload and deleting from server...",
+    message: "Loading secret...",
   });
   const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
+  
+  const { data: ciphertext, isLoading, error, isCached } = useSecret(secretId);
 
   // Extract key from URL fragment on mount
   useEffect(() => {
@@ -32,29 +34,17 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
     }
   }, []);
 
-  // Use tRPC mutation to fetch and delete the secret (one-time operation)
-  // tRPC + React Query will handle caching automatically
-  const getSecret = api.secrets.getSecret.useMutation({
-    onSuccess: async (payload) => {
-      if (!payload) {
-        setState({
-          type: "error",
-          message: "Secret not found or already accessed",
-        });
-        return;
-      }
-
-      if (!encryptionKey) {
-        setState({ type: "error", message: "No encryption key available" });
-        return;
-      }
+  // Handle secret decryption when we have both ciphertext and key
+  useEffect(() => {
+    const decryptSecret = async () => {
+      if (!ciphertext || !encryptionKey) return;
 
       try {
         setState({ type: "loading", message: "Decrypting secret locally..." });
-
-        // Decrypt using the key from URL fragment and ciphertext from server
-        const decryptedText = await importKeyAndDecrypt(payload, encryptionKey);
-
+        
+        // Decrypt using the key from URL fragment and ciphertext from cache/server
+        const decryptedText = await importKeyAndDecrypt(ciphertext, encryptionKey);
+        
         setState({ type: "ready", text: decryptedText, isRevealed: false });
       } catch (error) {
         console.error("Decryption failed:", error);
@@ -63,27 +53,25 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
           message: "Failed to decrypt secret. Invalid key or corrupted data.",
         });
       }
-    },
-    onError: (error) => {
-      console.error("Failed to fetch secret:", error);
+    };
+
+    void decryptSecret();
+  }, [ciphertext, encryptionKey]);
+
+  // Handle loading and error states from the hook
+  useEffect(() => {
+    if (error) {
       setState({
         type: "error",
         message: "Secret not found or already deleted",
       });
-    },
-  });
-
-  // Fetch the secret when we have the key
-  useEffect(() => {
-    if (
-      encryptionKey &&
-      !getSecret.data &&
-      !getSecret.isPending &&
-      !getSecret.error
-    ) {
-      getSecret.mutate({ id: secretId });
+    } else if (isLoading && !isCached) {
+      setState({
+        type: "loading",
+        message: isCached ? "Loading from cache..." : "Fetching encrypted payload and deleting from server...",
+      });
     }
-  }, [encryptionKey, secretId, getSecret]);
+  }, [error, isLoading, isCached]);
 
   const revealSecret = () => {
     if (state.type === "ready") {
@@ -136,8 +124,10 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
               Secret Retrieved
             </h2>
             <p className="text-sm text-gray-600">
-              This secret has been deleted from the server and decrypted locally
-              in your browser.
+              {isCached 
+                ? "This secret was loaded from your local cache and decrypted in your browser."
+                : "This secret has been deleted from the server and decrypted locally in your browser."
+              }
             </p>
           </div>
 

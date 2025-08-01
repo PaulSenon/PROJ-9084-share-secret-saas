@@ -18,7 +18,7 @@ export const secretsRouter = createTRPCRouter({
 
   getSecret: publicProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .query(async ({ input }) => {
       try {
         const result = await fetchMutation(api.myFunctions.getSecret, {
           id: input.id as Id<"secrets">,

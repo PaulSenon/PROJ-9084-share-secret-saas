@@ -1,10 +1,12 @@
 import { SecretViewer } from "~/components/secret-viewer";
 
 interface SecretPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function SecretPage({ params }: SecretPageProps) {
+export default async function SecretPage({ params }: SecretPageProps) {
+  const { id } = await params;
+  
   return (
     <main className="container mx-auto max-w-2xl px-4 py-8">
       <div className="mb-8 text-center">
@@ -12,7 +14,7 @@ export default function SecretPage({ params }: SecretPageProps) {
         <p className="text-gray-600">This secret can only be viewed once</p>
       </div>
 
-      <SecretViewer secretId={params.id} />
+      <SecretViewer secretId={id} />
     </main>
   );
 }

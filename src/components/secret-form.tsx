@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { api } from "~/trpc/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import { generateKeyAndEncrypt } from "~/lib/crypto";
+import { useCreateSecret } from "~/hooks/use-secret";
+import { api } from "~/trpc/react";
 
 interface SecretResult {
   id: string;
@@ -13,8 +16,9 @@ interface SecretResult {
 export function SecretForm() {
   const [text, setText] = useState("");
   const [result, setResult] = useState<SecretResult | null>(null);
+  const queryClient = useQueryClient();
 
-  const createSecret = api.secrets.setSecret.useMutation();
+  const createSecret = useCreateSecret();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,10 +34,31 @@ export function SecretForm() {
       // Create URL with key in fragment
       const url = `${window.location.origin}/${data.id}#${key}`;
 
-      setResult({
+      const secretResult = {
         id: data.id,
         key,
         url,
+      };
+
+      setResult(secretResult);
+
+      // Pre-populate the cache so owner can preview without hitting server
+      const queryKey = getQueryKey(api.secrets.getSecret, { id: data.id });
+
+      // Cache the ciphertext in TanStack Query with infinite settings
+      queryClient.setQueryData<string>(queryKey, ciphertext, {
+        updatedAt: Date.now(),
+      });
+
+      // Set query defaults to prevent any refetching
+      queryClient.setQueryDefaults(queryKey, {
+        staleTime: Infinity,
+        gcTime: Infinity,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
       });
     } catch (error) {
       console.error("Failed to create secret:", error);
