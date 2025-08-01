@@ -9,7 +9,6 @@ export const setSecret = mutation({
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("secrets", {
       payload: args.payload,
-      createdAt: Date.now(),
     });
 
     return { id };
@@ -38,7 +37,6 @@ export const getSecret = mutation({
 
     return {
       payload: secret.payload,
-      createdAt: secret.createdAt,
     };
   },
 });
