@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: ./docker/dev/Dockerfile.devEnv
+    volumes:
+      - ../../:/app:delegated # Source code mounting
+      - volume-pnpm-store:/app/.pnpm-store # Package cache persistence
+      - volume-claude-code:/root/.claude # Claude Code cache persistence
+      - volume-convex-data:/root/.convex # Convex data persistence
+    working_dir: /app
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - ../../.env
+      - ../../.env.local
+
+
+volumes:
+  volume-pnpm-store: # Persist package manager cache
+  volume-claude-code: # Claude Code cache persistence
+  volume-convex-data: # Persist Convex data
+
