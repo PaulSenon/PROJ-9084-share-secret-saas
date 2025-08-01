@@ -26,11 +26,15 @@ export const getSecret = mutation({
     const secret = await ctx.db.get(args.id);
 
     if (!secret) {
-      throw new Error("Secret not found or already accessed");
+      throw new Error("Secret not found");
     }
 
-    // Delete the secret immediately after reading (ephemeral)
-    await ctx.db.delete(args.id);
+    // Delete the payload immediately after reading (ephemeral)
+    if (secret.payload !== undefined) {
+      await ctx.db.patch(args.id, {
+        payload: undefined,
+      });
+    }
 
     return {
       payload: secret.payload,
