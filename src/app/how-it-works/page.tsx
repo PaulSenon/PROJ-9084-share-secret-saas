@@ -1,482 +1,296 @@
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Lock,
-  Shield,
-  Eye,
-  Zap,
-  Key,
-  Server,
-  Trash2,
-  ExternalLink,
-} from "lucide-react";
+import { Lock, Shield, Eye, Key, MessageSquare, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
-import { ThemeToggle } from "~/components/theme-toggle";
+import { Card, CardContent } from "~/components/ui/card";
 
 export default function HowItWorksPage() {
   return (
-    <div className="from-background to-muted/20 min-h-screen bg-gradient-to-br">
-      {/* Header */}
-      <header className="bg-background/80 border-b backdrop-blur-sm">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" size="icon">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-                <Lock className="h-4 w-4" />
-              </div>
-              <h1 className="text-xl font-semibold">SecretShare</h1>
-            </div>
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
+    <div className="bg-background">
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto">
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
-        <div className="mx-auto max-w-4xl">
           {/* Header */}
-          <div className="mb-12 text-center">
-            <Badge variant="secondary" className="mb-4">
-              Zero-Knowledge Architecture
-            </Badge>
-            <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-              How It
-              <span className="text-primary"> Works</span>
-            </h1>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              Understanding the security and privacy features that protect your
-              sensitive information
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-8">
+              <Shield className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-400 text-sm font-medium">Security & Privacy</span>
+            </div>
+            <h1 className="text-4xl font-light text-white mb-4">How It Works</h1>
+            <p className="text-gray-400 text-lg font-light max-w-2xl mx-auto">
+              Understanding the security and privacy features that protect your sensitive information
             </p>
           </div>
 
-          {/* Security Features */}
-          <div className="mb-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <Shield className="text-primary mb-2 h-8 w-8" />
-                <CardTitle className="text-lg">End-to-End Encrypted</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-3 text-sm">
-                  Your secrets are encrypted using AES-256-GCM encryption
-                  directly in your browser before being sent to our servers.
+          {/* Use Case Card */}
+          <Card className="bg-gray-900/50 border-gray-800 mb-16">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-medium text-white mb-3">Perfect for Sensitive Communications</h2>
+                  <p className="text-gray-300 leading-relaxed">
+                    When you need to share sensitive information quickly over untrusted communication channels like
+                    email, SMS, chat apps, or social media, our platform provides a secure solution. Share a link
+                    containing an end-to-end encrypted secret that can be decoded once (guaranteed), then disappears
+                    from our servers forever. The recipient gets secure access while maintaining complete privacy.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Lock className="w-5 h-5 text-emerald-400" />
+                  <h3 className="font-medium text-white">End-to-End Encryption</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">
+                  Military-grade AES-256-GCM encryption ensures your data is protected with the highest security
+                  standards.
                 </p>
                 <a
                   href="https://en.wikipedia.org/wiki/Galois/Counter_Mode"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
+                  className="inline-flex items-center gap-1 text-emerald-400 text-sm hover:text-emerald-300 transition-colors"
                 >
-                  Learn about AES-GCM <ExternalLink className="h-3 w-3" />
+                  Learn more <ExternalLink className="w-3 h-3" />
                 </a>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <Eye className="text-primary mb-2 h-8 w-8" />
-                <CardTitle className="text-lg">One-Time Access</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Secrets are automatically deleted after the first view,
-                  ensuring they can never be accessed again.
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Eye className="w-5 h-5 text-blue-400" />
+                  <h3 className="font-medium text-white">One-Time Access</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">
+                  Once someone reads the message, it&apos;s permanently deleted from our servers. Only the sender and
+                  receiver retain local copies.
                 </p>
+                <span className="text-blue-400 text-sm">Guaranteed privacy</span>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <Key className="text-primary mb-2 h-8 w-8" />
-                <CardTitle className="text-lg">Client-Side Keys</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-3 text-sm">
-                  Encryption keys never leave your browser and are only shared
-                  through URL fragments.
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Key className="w-5 h-5 text-purple-400" />
+                  <h3 className="font-medium text-white">Zero-Knowledge</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">
+                  Encryption keys are stored in URL fragments (#), never sent to our servers. We literally cannot
+                  decrypt your data.
                 </p>
                 <a
                   href="https://en.wikipedia.org/wiki/URI_fragment"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
+                  className="inline-flex items-center gap-1 text-purple-400 text-sm hover:text-purple-300 transition-colors"
                 >
-                  Learn about URL fragments <ExternalLink className="h-3 w-3" />
+                  How it works <ExternalLink className="w-3 h-3" />
+                </a>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-colors">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Shield className="w-5 h-5 text-orange-400" />
+                  <h3 className="font-medium text-white">Open Source</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">
+                  Fully auditable code ensures transparency and builds trust through community verification.
+                </p>
+                <a
+                  href="https://github.com/PaulSenon/PROJ-9084-share-secret-saas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-orange-400 text-sm hover:text-orange-300 transition-colors"
+                >
+                  View source <ExternalLink className="w-3 h-3" />
                 </a>
               </CardContent>
             </Card>
           </div>
 
-          {/* How It Works Process */}
-          <Card className="mb-12">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                The Process
-              </CardTitle>
-              <CardDescription>
-                Step-by-step breakdown of how your secrets are protected
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  1
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">Client-Side Encryption</h3>
-                  <p className="text-muted-foreground text-sm">
-                    When you enter your secret, a unique AES-256-GCM encryption
-                    key is generated in your browser. Your plaintext is
-                    encrypted locally before any data is transmitted.
-                  </p>
-                </div>
-              </div>
+          {/* Security Process Steps */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-medium text-white mb-8 text-center">Security Process</h2>
+            <div className="space-y-6">
+              {[
+                {
+                  id: 1,
+                  title: "Client-Side Encryption",
+                  description: "When you enter your secret, a unique AES-256-GCM encryption key is generated in your browser. Your plaintext is encrypted locally before any data is transmitted.",
+                  color: "emerald"
+                },
+                {
+                  id: 2,
+                  title: "Secure Transmission",
+                  description: "Only the encrypted ciphertext is sent to our servers. The encryption key remains in your browser and is embedded in the shareable URL fragment (by design, never accessible by server at any point in time).",
+                  color: "blue"
+                },
+                {
+                  id: 3,
+                  title: "URL Generation & Local Caching", 
+                  description: "A unique URL is created containing the secret ID and the encryption key in the URL fragment (#key). The encrypted secret is also cached locally in the creator's browser for preview purposes.",
+                  color: "purple"
+                },
+                {
+                  id: 4,
+                  title: "Share over Untrusted Channel",
+                  description: "The link can then be shared in any third party communication channel to the receiver that simply clicks on it on their side.",
+                  color: "orange"
+                },
+                {
+                  id: 5,
+                  title: "First Access & Server Deletion",
+                  description: "When the recipient first opens the URL, the encrypted data is fetched from our servers and immediately deleted. The decryption happens entirely in their browser, and the decrypted content is cached locally for them as well.",
+                  color: "green"
+                },
+                {
+                  id: 6,
+                  title: "Subsequent Access from Owner and Receiver",
+                  description: "Both the creator and the first recipient can revisit the URL and view the secret again, but it will be loaded from their local browser cache only. No additional server requests are made, and the secret remains accessible only to these two parties in their respective browsers.",
+                  color: "cyan"
+                },
+                {
+                  id: 7,
+                  title: "Malicious Access if Link Leaks",
+                  description: "Any other malicious person accessing this same link later, will request the server for the secret payload (that no longer exists) and will show a 404 error page.",
+                  color: "red"
+                }
+              ].map((step) => (
+                <Card key={step.id} className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-colors">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                        step.color === 'emerald' ? 'bg-emerald-500/20 text-emerald-400' :
+                        step.color === 'blue' ? 'bg-blue-500/20 text-blue-400' :
+                        step.color === 'purple' ? 'bg-purple-500/20 text-purple-400' :
+                        step.color === 'orange' ? 'bg-orange-500/20 text-orange-400' :
+                        step.color === 'green' ? 'bg-green-500/20 text-green-400' :
+                        step.color === 'cyan' ? 'bg-cyan-500/20 text-cyan-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {step.id === 7 ? <AlertTriangle className="w-4 h-4" /> : step.id}
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-white mb-2">{step.title}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
 
-              <Separator />
-
-              <div className="flex items-start gap-4">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  2
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">Secure Transmission</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Only the encrypted ciphertext is sent to our servers. The
-                    encryption key remains in your browser and is embedded in
-                    the shareable URL fragment.
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-start gap-4">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  3
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">
-                    URL Generation & Local Caching
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    A unique URL is created containing the secret ID and the
-                    encryption key in the
-                    <a
-                      href="https://en.wikipedia.org/wiki/URI_fragment"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary mx-1 hover:underline"
-                    >
-                      URL fragment
-                    </a>
-                    (#key). The encrypted secret is also cached locally in the
-                    creator&apos;s browser for preview purposes.
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-start gap-4">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  4
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">
-                    First Access & Server Deletion
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    When the recipient first opens the URL, the encrypted data
-                    is fetched from our servers and immediately deleted. The
-                    decryption happens entirely in their browser, and the
-                    decrypted content is cached locally for them as well.
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-start gap-4">
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
-                  5
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold">Subsequent Access</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Both the creator and the first recipient can revisit the URL
-                    and view the secret again, but it will be loaded from their
-                    local browser cache only. No additional server requests are
-                    made, and the secret remains accessible only to these two
-                    parties in their respective browsers.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Technical Details */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <Server className="text-primary mb-2 h-8 w-8" />
-                <CardTitle className="text-lg">What We Store</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>Encrypted ciphertext only</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>Unique secret identifier</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-red-600">✗</span>
-                  <span>Your plaintext secrets</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-red-600">✗</span>
-                  <span>Encryption keys</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-red-600">✗</span>
-                  <span>Personal information</span>
-                </div>
-                <div className="mt-4">
-                  <a
-                    href="https://en.wikipedia.org/wiki/Zero-knowledge_proof"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
-                  >
-                    Learn about zero-knowledge architecture{" "}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+          {/* What We Store vs Don't Store */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-400" />
+                  What We Store
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Encrypted ciphertext only</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Unique secret identifier</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-gray-300">Timestamp for auto-deletion</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <Trash2 className="text-primary mb-2 h-8 w-8" />
-                <CardTitle className="text-lg">
-                  Local Caching & Deletion
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>Server data deleted after first access</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>Local cache for creator and first viewer</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>No recovery possible from server</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600">✓</span>
-                  <span>Ephemeral by design</span>
-                </div>
-                <div className="mt-4">
-                  <a
-                    href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
-                  >
-                    Learn about browser storage{" "}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                  What We Never Store
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-gray-300">Your plaintext secrets</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-gray-300">Encryption keys</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-gray-300">Personal information</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-red-400">✗</span>
+                    <span className="text-gray-300">Access logs or metadata</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Additional Technical Resources */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Technical Resources
-              </CardTitle>
-              <CardDescription>
-                Learn more about the cryptographic and web technologies that
-                power SecretShare
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold">
-                    Encryption & Security
-                  </h4>
-                  <div className="space-y-2">
-                    <a
-                      href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      Web Crypto API <ExternalLink className="h-3 w-3" />
+          {/* Technical Resources */}
+          <Card className="bg-gray-900/50 border-gray-800 mb-16">
+            <CardContent className="p-8">
+              <h3 className="text-xl font-medium text-white mb-6">Technical Resources</h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="font-medium text-white mb-4">Encryption & Security</h4>
+                  <div className="space-y-3">
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      Web Crypto API →
                     </a>
-                    <a
-                      href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      AES Encryption Standard{" "}
-                      <ExternalLink className="h-3 w-3" />
+                    <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      AES Encryption Standard →
                     </a>
-                    <a
-                      href="https://en.wikipedia.org/wiki/End-to-end_encryption"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      End-to-End Encryption <ExternalLink className="h-3 w-3" />
+                    <a href="https://en.wikipedia.org/wiki/End-to-end_encryption" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      End-to-End Encryption →
                     </a>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold">Web Technologies</h4>
-                  <div className="space-y-2">
-                    <a
-                      href="https://developer.mozilla.org/en-US/docs/Web/API/URL/hash"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      URL Hash/Fragment <ExternalLink className="h-3 w-3" />
+                <div>
+                  <h4 className="font-medium text-white mb-4">Web Technologies</h4>
+                  <div className="space-y-3">
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/hash" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      URL Hash/Fragment →
                     </a>
-                    <a
-                      href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      Local Storage API <ExternalLink className="h-3 w-3" />
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      Local Storage API →
                     </a>
-                    <a
-                      href="https://en.wikipedia.org/wiki/Client-side_encryption"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary block flex items-center gap-1 text-sm hover:underline"
-                    >
-                      Client-Side Encryption{" "}
-                      <ExternalLink className="h-3 w-3" />
+                    <a href="https://en.wikipedia.org/wiki/Client-side_encryption" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm transition-colors">
+                      Client-Side Encryption →
                     </a>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Open Source */}
-          <Card className="mt-8 border-green-200 dark:border-green-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                <Shield className="h-5 w-5" />
-                Open Source & Transparent
-              </CardTitle>
-              <CardDescription>
-                Full transparency through open source code - audit the security
-                yourself
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-muted-foreground text-sm">
-                  SecretShare is completely open source, meaning you can review
-                  every line of code that handles your secrets. This
-                  transparency ensures there are no hidden backdoors, logging
-                  mechanisms, or security vulnerabilities.
-                </p>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-green-600">✓</span>
-                    <span>100% transparent code</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-green-600">✓</span>
-                    <span>Community auditable</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-green-600">✓</span>
-                    <span>No hidden functionality</span>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <Button asChild variant="outline" size="sm">
-                    <a
-                      href="https://github.com/PaulSenon/PROJ-9084-share-secret-saas"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2"
-                    >
-                      <svg
-                        className="h-4 w-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                      </svg>
-                      View Source Code
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Call to Action */}
-          <div className="mt-12 text-center">
-            <Button asChild size="lg">
+          <div className="text-center">
+            <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Link href="/">Start Sharing Secrets Securely</Link>
             </Button>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-background/80 border-t backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-muted-foreground text-sm">
-              Built with Next.js, Convex, and end-to-end encryption
-            </p>
-            <div className="text-muted-foreground flex items-center gap-4 text-sm">
-              <span className="flex items-center gap-1">
-                <Lock className="h-3 w-3" />
-                Zero-knowledge
-              </span>
-              <span className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                Client-side encryption
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }

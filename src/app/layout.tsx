@@ -3,6 +3,8 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
+import { Header } from "~/components/header";
+import { Footer } from "~/components/footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,8 +22,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable}`} suppressHydrationWarning>
-      <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
+      <body className="font-sans antialiased min-h-screen flex flex-col">
+        <Providers>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
