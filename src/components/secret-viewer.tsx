@@ -1,50 +1,163 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, Trash, Unlock, Eye, EyeOff, Loader2, Shield, Cloud, Copy, Check } from "lucide-react";
-import { toast } from "sonner";
+import { Unlock, Eye, EyeOff, Info, AlertCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import {
+  StepAnimation,
+  type Step,
+  type StepStatus,
+} from "~/components/step-animation";
+import { StatusHeader } from "~/components/ui/status-header";
+import { InteractiveTextarea } from "~/components/ui/interactive-textarea";
+import { CopyButton } from "~/components/ui/copy-button";
 
 import { importKeyAndDecrypt } from "~/lib/crypto";
-import { useSecret } from "~/hooks/use-secret";
+import { useGetSecret } from "~/hooks/use-secret";
 
-interface ProcessStep {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const decryptionSteps: ProcessStep[] = [
-  { id: "download", label: "Downloading payload", icon: <Download className="w-4 h-4" /> },
-  { id: "delete", label: "Deleting from server", icon: <Trash className="w-4 h-4" /> },
-  { id: "save", label: "Storing locally", icon: <Shield className="w-4 h-4" /> },
-  { id: "decrypt", label: "Decrypting message", icon: <Unlock className="w-4 h-4" /> },
+const getDecryptionSteps = (isCached: boolean): Step[] => [
+  {
+    id: "download",
+    label: isCached ? "Loading offline payload" : "Downloading payload",
+    status: "pending" as StepStatus,
+  },
+  {
+    id: "delete",
+    label: "Deleting from server",
+    status: "pending" as StepStatus,
+  },
+  {
+    id: "save",
+    label: "Storing locally",
+    status: "pending" as StepStatus,
+  },
+  {
+    id: "decrypt",
+    label: "Decrypting message",
+    status: "pending" as StepStatus,
+  },
 ];
 
 interface SecretViewerProps {
   secretId: string;
 }
 
-type ViewState =
-  | { type: "loading"; message: string }
-  | { type: "error"; message: string }
-  | { type: "ready"; text: string; isRevealed: boolean };
-
 export function SecretViewer({ secretId }: SecretViewerProps) {
-  const [state, setState] = useState<ViewState>({
-    type: "loading",
-    message: "Loading secret...",
-  });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [text, setText] = useState<string>("");
   const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [copied, setCopied] = useState(false);
-  const [badgesLoaded, setBadgesLoaded] = useState(false);
-  
-  const { data: ciphertext, error, isCached } = useSecret(secretId);
+  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
+  const [steps, setSteps] = useState<Step[]>([]);
+
+  const { getSecret, isSecretCached } = useGetSecret();
+
+  const runDecryption = async () => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    // Check if we have the secret cached to show proper step labels
+    const isCached = isSecretCached(secretId);
+    const decryptionSteps = getDecryptionSteps(isCached);
+
+    // Reset all steps to pending
+    setCurrentStepIndex(0);
+    setSteps(
+      decryptionSteps.map((step) => ({
+        ...step,
+        status: "initial",
+      })),
+    );
+
+    try {
+      // Step 1: Get secret (from cache or server)
+      setCurrentStepIndex(0);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 0 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      const ciphertext = await getSecret(secretId);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 0 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      // Step 2: Delete from server (automatic when fetching)
+      setCurrentStepIndex(1);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 1 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 1 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      // Step 3: Store locally (automatic via TanStack Query)
+      setCurrentStepIndex(2);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 2 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 2 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      // Step 4: Decrypt message
+      setCurrentStepIndex(3);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 3 ? { ...step, status: "loading" } : step,
+        ),
+      );
+
+      if (!encryptionKey) {
+        throw new Error("No encryption key found in URL");
+      }
+
+      const decryptedText = await importKeyAndDecrypt(
+        ciphertext,
+        encryptionKey,
+      );
+      setText(decryptedText);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 3 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      setIsProcessing(false);
+      setIsCompleted(true);
+    } catch (error) {
+      console.error("Decryption failed:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to decrypt secret",
+      );
+      setIsProcessing(false);
+    }
+  };
 
   // Extract key from URL fragment on mount
   useEffect(() => {
@@ -53,259 +166,139 @@ export function SecretViewer({ secretId }: SecretViewerProps) {
       if (hashKey) {
         setEncryptionKey(hashKey);
       } else {
-        setState({ type: "error", message: "No encryption key found in URL" });
+        setError("No encryption key found in URL");
       }
     }
   }, []);
 
-  // Handle secret decryption when we have both ciphertext and key
+  // Auto-start decryption when component mounts and we have the key
   useEffect(() => {
-    const decryptSecret = async () => {
-      if (!ciphertext || !encryptionKey) return;
-
-      try {
-        // Simulate badge loading
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setBadgesLoaded(true);
-
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setCurrentStep(0);
-
-        for (let i = 0; i < decryptionSteps.length; i++) {
-          setCurrentStep(i);
-          
-          if (i === decryptionSteps.length - 1) {
-            // Last step: decrypt
-            const decryptedText = await importKeyAndDecrypt(ciphertext, encryptionKey);
-            setState({ type: "ready", text: decryptedText, isRevealed: false });
-            await new Promise((resolve) => setTimeout(resolve, 800));
-          } else {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-          }
-
-          setCompletedSteps((prev) => new Set([...prev, i]));
-          await new Promise((resolve) => setTimeout(resolve, 300));
-        }
-
-        setCurrentStep(-1);
-      } catch (error) {
-        console.error("Decryption failed:", error);
-        setState({
-          type: "error",
-          message: "Failed to decrypt secret. Invalid key or corrupted data.",
-        });
-      }
-    };
-
-    void decryptSecret();
-  }, [ciphertext, encryptionKey]);
-
-  // Handle loading and error states from the hook
-  useEffect(() => {
-    if (error) {
-      setState({
-        type: "error",
-        message: "Secret not found or already deleted",
-      });
+    if (encryptionKey && !isProcessing && !isCompleted && !error) {
+      void runDecryption();
     }
-  }, [error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encryptionKey]);
 
   const revealText = () => {
-    if (state.type === "ready") {
-      setState({ ...state, isRevealed: true });
+    if (isCompleted) {
+      setIsRevealed(true);
     }
   };
 
   const hideText = () => {
-    if (state.type === "ready") {
-      setState({ ...state, isRevealed: false });
+    if (isCompleted) {
+      setIsRevealed(false);
     }
   };
-
-  const copyToClipboard = async () => {
-    if (state.type === "ready") {
-      try {
-        await navigator.clipboard.writeText(state.text);
-        setCopied(true);
-        toast.success("Secret copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        toast.error("Failed to copy to clipboard");
-      }
-    }
-  };
-
-  if (state.type === "error") {
-    return (
-      <>
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2 mb-8">
-            <Unlock className="w-4 h-4 text-red-400" />
-            <span className="text-red-400 text-sm font-medium">Access Error</span>
-          </div>
-          <h1 className="text-4xl font-light text-foreground mb-4">Secret Not Found</h1>
-          <p className="text-muted-foreground text-lg font-light">This secret may have already been accessed or deleted.</p>
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
       {/* Header */}
-      <div className="text-center mb-16">
-        <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-8">
-          <Unlock className="w-4 h-4 text-blue-400" />
-          <span className="text-blue-400 text-sm font-medium">Secure Message Access</span>
+      <div className="mb-8 text-center">
+        <div
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-4 py-2",
+            "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+          )}
+        >
+          <Unlock className="h-4 w-4" />
+          <span className="text-sm font-medium">Access Secret</span>
         </div>
-        <h1 className="text-4xl font-light text-foreground mb-4">Encrypted Message</h1>
-        <p className="text-muted-foreground text-lg font-light">Decrypting your secure content locally.</p>
       </div>
+      <StatusHeader
+        title="Someone shared a secret with you"
+        description="End-to-end client encryption, one-time read, no data retention."
+      />
 
-      {/* Source Badges */}
-      <div className="flex justify-start gap-3 mb-6">
-        {!badgesLoaded ? (
-          <>
-            <Badge variant="outline" className="bg-background/50">
-              <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
-              Loading...
-            </Badge>
-            <Badge variant="outline" className="bg-background/50">
-              <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
-              Verifying...
-            </Badge>
-          </>
-        ) : (
-          <>
-            <Badge variant="outline" className="bg-background/50">
-              {isCached ? (
-                <>
-                  <Shield className="w-3 h-3 mr-1.5" />
-                  Stored Locally
-                </>
-              ) : (
-                <>
-                  <Cloud className="w-3 h-3 mr-1.5" />
-                  From Server
-                </>
-              )}
-            </Badge>
-            <Badge className="bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-emerald-500/20 shadow-sm">
-              <Shield className="w-3 h-3 mr-1.5" />
-              Eyes Only
-            </Badge>
-          </>
+      {/* Message Display */}
+      <InteractiveTextarea
+        value={text}
+        readOnly
+        className={cn(isProcessing && "text-muted-foreground")}
+        hasBackdrop={isProcessing || (isCompleted && !isRevealed)}
+      >
+        {error ? (
+          <div className="flex h-full w-full items-center justify-center p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-destructive flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Error</span>
+                <span className="text-sm font-medium">{error}</span>
+              </div>
+            </div>
+          </div>
+        ) : isProcessing ? (
+          <StepAnimation
+            steps={steps}
+            currentStepIndex={currentStepIndex}
+            className="h-full w-full"
+          />
+        ) : isCompleted && !isRevealed ? (
+          <div className="flex h-full w-full items-center justify-center p-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="bg-background/70 hover:bg-background/80 cursor-pointer rounded-lg border px-4 py-2 transition-colors"
+                onClick={revealText}
+              >
+                <div className="text-muted-foreground flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  <span className="text-sm font-medium">Reveal message</span>
+                </div>
+              </div>
+              <CopyButton
+                text={text}
+                className="bg-background/70 hover:bg-background/80"
+                successMessage="Secret copied to clipboard!"
+              />
+            </div>
+          </div>
+        ) : undefined}
+      </InteractiveTextarea>
+
+      {/* Privacy Notice - Reserved Space */}
+      <div className="mb-4 flex min-h-[24px] items-center">
+        {isCompleted && (
+          <div className="animate-in slide-in-from-bottom-4 flex items-center gap-2 duration-500">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-muted-foreground/80 flex cursor-help items-center gap-1.5 text-xs">
+                    <Info className="h-4 w-4" />
+                    <span>Stored securely locally, deleted from server</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-sm p-3">
+                  <p className="text-xs leading-relaxed">
+                    This message has been permanently deleted from our servers
+                    and is now securely stored in your browser&apos;s local
+                    storage for offline access. This means you (and the secret
+                    creator) are guaranteed to be the only people able to access
+                    this secret link ever again. If the link is opened by
+                    someone else or in another browser, it will show a 404 error
+                    page.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         )}
       </div>
 
-      {/* Message Display */}
-      <div className="relative mb-6">
-        <div
-          className={cn(
-            "min-h-[120px] bg-card border rounded-lg p-6 transition-all duration-300 cursor-pointer",
-            state.type === "ready" && !state.isRevealed && "hover:border-gray-700",
-            state.type === "ready" && state.isRevealed && "border-blue-500/30",
-          )}
-          onClick={state.type === "ready" && !state.isRevealed ? revealText : undefined}
-        >
-          {/* Loading/Processing Overlay */}
-          {state.type === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-lg">
-              <div className="flex flex-col items-center gap-4">
-                {decryptionSteps.map((step, index) => (
-                  <div
-                    key={step.id}
-                    className={cn(
-                      "flex items-center gap-3 transition-all duration-500 transform",
-                      index === currentStep && "scale-100 opacity-100",
-                      index < currentStep && completedSteps.has(index) && "scale-75 opacity-60 -translate-y-2",
-                      index > currentStep && "scale-90 opacity-30 translate-y-2",
-                    )}
-                  >
-                    <div className="relative">
-                      {index === currentStep ? (
-                        <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-                      ) : completedSteps.has(index) ? (
-                        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center animate-in zoom-in-50 duration-300">
-                          <Check className="w-3 h-3 text-foreground" />
-                        </div>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-600" />
-                      )}
-                    </div>
-                    <div
-                      className={cn(
-                        "text-sm font-medium transition-colors duration-300",
-                        index === currentStep && "text-blue-400",
-                        completedSteps.has(index) && "text-blue-300",
-                        index > currentStep && "text-muted-foreground/50",
-                      )}
-                    >
-                      {step.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Decrypted Content */}
-          {state.type === "ready" && (
-            <div className="relative">
-              <div
-                className={cn(
-                  "text-foreground text-lg leading-relaxed transition-all duration-500",
-                  !state.isRevealed && "filter blur-sm select-none",
-                )}
-              >
-                {state.text}
-              </div>
-
-              {/* Reveal Overlay */}
-              {!state.isRevealed && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-background/70 border rounded-lg px-4 py-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Eye className="w-4 h-4" />
-                      <span className="text-sm font-medium">Click to reveal message</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              {state.isRevealed && (
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button
-                    onClick={copyToClipboard}
-                    size="sm"
-                    variant="outline"
-                  >
-                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                  <Button
-                    onClick={hideText}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <EyeOff className="w-4 h-4 mr-2" />
-                    Hide
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Action Buttons - Reserved Space */}
+      <div className="mb-6 min-h-[40px]">
+        {isCompleted && isRevealed && (
+          <div className="animate-in slide-in-from-bottom-4 flex items-center gap-2 duration-500">
+            <Button onClick={hideText} size="sm" variant="ghost">
+              <EyeOff className="mr-2 h-4 w-4" />
+              Hide
+            </Button>
+            <CopyButton
+              text={text}
+              successMessage="Secret copied to clipboard!"
+            />
+          </div>
+        )}
       </div>
-
-      {/* Privacy Notice */}
-      {state.type === "ready" && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground animate-in slide-in-from-bottom-4 duration-500">
-          <span>You&apos;re reading a copy stored securely locally</span>
-        </div>
-      )}
     </>
   );
 }

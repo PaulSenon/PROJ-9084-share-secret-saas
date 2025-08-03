@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lock, Plus, BookOpen } from "lucide-react";
+import { Shield, Plus, BookOpen } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { cn } from "~/lib/utils";
@@ -21,13 +21,13 @@ export function Header() {
             className="text-foreground hover:text-muted-foreground flex items-center gap-2 transition-colors"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/20">
-              <Lock className="h-4 w-4 text-emerald-400" />
+              <Shield className="h-4 w-4 text-emerald-400" />
             </div>
             <span className="font-medium">SecretShare</span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden items-center gap-6 md:flex">
+          {/* <nav className="hidden items-center gap-6 md:flex">
             <Link
               href="/how-it-works"
               className={cn(
@@ -38,7 +38,7 @@ export function Header() {
               <BookOpen className="h-4 w-4" />
               How it works
             </Link>
-          </nav>
+          </nav> */}
 
           {/* Actions */}
           <div className="flex items-center gap-3">

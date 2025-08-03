@@ -1,56 +1,41 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
-import { Check, Copy, Lock, Send, Link, Shield } from "lucide-react";
+import { Check, Copy, Lock, CornerDownLeft } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "~/lib/utils";
 
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
-import {
-  StepAnimation,
-  type Step,
-  type StepStatus,
-} from "~/components/step-animation";
+import { StepAnimation, type Step } from "~/components/step-animation";
+import { StatusHeader } from "~/components/ui/status-header";
+import { InteractiveTextarea } from "~/components/ui/interactive-textarea";
 
 import { generateKeyAndEncrypt } from "~/lib/crypto";
 import { useCreateSecret } from "~/hooks/use-secret";
-import { api } from "~/trpc/react";
+import { cn } from "~/lib/utils";
+import Link from "next/link";
 
 const encryptionSteps: Step[] = [
   {
     id: "encrypt",
     label: "Encrypting locally",
-    icon: <Lock className="h-4 w-4" />,
-    status: "pending" as StepStatus,
+    status: "initial",
   },
   {
-    id: "save",
-    label: "Securing payload",
-    icon: <Shield className="h-4 w-4" />,
-    status: "pending" as StepStatus,
+    id: "upload",
+    label: "Sending payload to server",
+    status: "initial",
   },
   {
-    id: "send",
-    label: "Uploading to server",
-    icon: <Send className="h-4 w-4" />,
-    status: "pending" as StepStatus,
+    id: "cache",
+    label: "Caching payload locally",
+    status: "initial",
   },
   {
     id: "generate",
     label: "Generating secure link",
-    icon: <Link className="h-4 w-4" />,
-    status: "pending" as StepStatus,
+    status: "initial",
   },
 ];
-
-interface SecretResult {
-  id: string;
-  key: string;
-  url: string;
-}
 
 export function SecretForm() {
   const [text, setText] = useState("");
@@ -63,8 +48,7 @@ export function SecretForm() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
 
-  const queryClient = useQueryClient();
-  const createSecret = useCreateSecret();
+  const { createSecretAndCache, error: createError } = useCreateSecret();
 
   // Auto-focus textarea on load
   useEffect(() => {
@@ -73,63 +57,96 @@ export function SecretForm() {
     }
   }, [isProcessing, isCompleted]);
 
-  const simulateEncryptionSteps = async (
-    actualEncryption: () => Promise<SecretResult>,
-  ) => {
+  const runEncryption = async () => {
     setIsProcessing(true);
-    setCurrentStepIndex(0);
 
     // Reset all steps to pending
+    setCurrentStepIndex(0);
     setSteps(
       encryptionSteps.map((step) => ({
         ...step,
-        status: "pending" as StepStatus,
+        status: "initial",
       })),
     );
 
-    for (let i = 0; i < encryptionSteps.length; i++) {
-      setCurrentStepIndex(i);
-
-      // Set current step to loading
+    try {
+      // Step 1: Encrypt locally
+      setCurrentStepIndex(0);
       setSteps((prev) =>
         prev.map((step, index) =>
-          index === i ? { ...step, status: "loading" as StepStatus } : step,
+          index === 0 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      const { ciphertext, key } = await generateKeyAndEncrypt(text);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 0 ? { ...step, status: "success" } : step,
         ),
       );
 
-      if (i === 0) {
-        // Step 1: Encrypting locally - do actual encryption
-        await actualEncryption().then((result) => {
-          setGeneratedLink(result.url);
-        });
-        await new Promise((resolve) => setTimeout(resolve, 800));
-      } else if (i === encryptionSteps.length - 1) {
-        // Last step: Generate link and copy to clipboard
-        await new Promise((resolve) => setTimeout(resolve, 600));
-      } else {
-        // Other steps
-        await new Promise((resolve) => setTimeout(resolve, 800));
+      // Step 2: Create secret and cache automatically
+      setCurrentStepIndex(1);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 1 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      const { id } = await createSecretAndCache(ciphertext);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 1 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      // Step 3: Cache step (automatic, just show progress)
+      setCurrentStepIndex(2);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 2 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 2 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      // Step 4: Generate secure link
+      setCurrentStepIndex(3);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 3 ? { ...step, status: "loading" } : step,
+        ),
+      );
+      const url = `${window.location.origin}/${id}#${key}`;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 3 ? { ...step, status: "success" } : step,
+        ),
+      );
+
+      setIsProcessing(false);
+      setIsCompleted(true);
+
+      // Auto-copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard!");
+      } catch {
+        // Silent fail if clipboard not available
       }
 
-      // Set current step to success
-      setSteps((prev) =>
-        prev.map((step, index) =>
-          index === i ? { ...step, status: "success" as StepStatus } : step,
-        ),
-      );
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    }
-
-    setIsCompleted(true);
-    setIsProcessing(false);
-    setCurrentStepIndex(-1);
-
-    // Auto-copy link to clipboard
-    try {
-      await navigator.clipboard.writeText(generatedLink);
-      toast.success("Link copied to clipboard!");
-    } catch {
-      // Silent fail if clipboard not available
+      return {
+        id,
+        key,
+        url,
+      };
+    } catch (error) {
+      setIsProcessing(false);
+      throw error;
     }
   };
 
@@ -137,49 +154,14 @@ export function SecretForm() {
     e?.preventDefault();
     if (!text.trim() || isProcessing) return;
 
-    const actualEncryption = async (): Promise<SecretResult> => {
-      // Generate key and encrypt the text
-      const { ciphertext, key } = await generateKeyAndEncrypt(text);
-
-      // Send only the ciphertext as payload
-      const data = await createSecret.mutateAsync({ payload: ciphertext });
-
-      // Create URL with key in fragment
-      const url = `${window.location.origin}/${data.id}#${key}`;
-
-      const secretResult = {
-        id: data.id,
-        key,
-        url,
-      };
-
-      // Pre-populate the cache so owner can preview without hitting server
-      const queryKey = getQueryKey(api.secrets.getSecret, { id: data.id });
-
-      // Cache the ciphertext in TanStack Query with infinite settings
-      queryClient.setQueryData<string>(queryKey, ciphertext, {
-        updatedAt: Date.now(),
-      });
-
-      // Set query defaults to prevent any refetching
-      queryClient.setQueryDefaults(queryKey, {
-        staleTime: Infinity,
-        gcTime: Infinity,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-        refetchInterval: false,
-        refetchIntervalInBackground: false,
-      });
-
-      return secretResult;
-    };
-
     try {
-      await simulateEncryptionSteps(actualEncryption);
+      const secretResult = await runEncryption();
+      setGeneratedLink(secretResult.url);
     } catch (error) {
       console.error("Failed to create secret:", error);
-      toast.error("Failed to create secret. Please try again.");
+      toast.error(
+        createError?.message ?? "Failed to create secret. Please try again.",
+      );
       setIsProcessing(false);
       setCurrentStepIndex(-1);
     }
@@ -213,96 +195,35 @@ export function SecretForm() {
   return (
     <>
       {/* Header */}
-      <div className="mb-16 text-center">
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2">
-          <Lock className="h-4 w-4 text-emerald-400" />
-          <span className="text-sm font-medium text-emerald-400">
-            Zero-Knowledge Encryption
-          </span>
+      <div className="mb-8 text-center">
+        <div
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-4 py-2",
+            "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+          )}
+        >
+          <Lock className="h-4 w-4" />
+          <span className="text-sm font-medium">Zero-Knowledge Encryption</span>
         </div>
-        <h1 className="text-foreground mb-4 text-4xl font-light">
-          Share a secret over any chat
-        </h1>
-        <p className="text-muted-foreground text-lg font-light">
-          End-to-end client encryption, one-time read, no data retention.
-        </p>
       </div>
+      <StatusHeader
+        title="Share a secret over any chat"
+        description="End-to-end client encryption, one-time read, no data retention."
+      />
 
       {/* Textarea Section */}
-      <div className="relative mb-8">
-        <div className="relative">
-          <Textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setText(e.target.value)
-            }
-            onKeyDown={handleKeyPress}
-            placeholder="Enter your secret..."
-            rows={4}
-            className={cn(
-              "border-border bg-background text-foreground placeholder:text-muted-foreground min-h-[120px] resize-y text-lg transition-all duration-300 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20",
-              isCompleted && "border-emerald-500/30",
-            )}
-            disabled={isProcessing || isCompleted}
-          />
-
-          {/* Backdrop Blur Layer */}
-          {(isProcessing || isCompleted) && (
-            <div
-              className={cn(
-                "bg-background/10 outline-border pointer-events-none absolute inset-0 box-content rounded-md outline backdrop-blur-sm transition-all duration-300",
-                isCompleted && "outline-emerald-500/30",
-              )}
-            />
-          )}
-
-          {/* Processing Steps Overlay */}
-          {isProcessing && (
-            <div className="absolute inset-0 rounded-md">
-              <StepAnimation
-                steps={steps}
-                currentStepIndex={currentStepIndex}
-                className="h-full w-full"
-              />
-            </div>
-          )}
-
-          {/* Encrypted State with URL */}
-          {isCompleted && !isProcessing && generatedLink && (
-            <div className="absolute inset-0 flex items-center justify-center p-4">
-              <div className="mx-4 flex w-full max-w-full items-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
-                <div className="flex flex-shrink-0 items-center gap-2 px-3 py-2">
-                  <Lock className="h-4 w-4 text-emerald-400" />
-                </div>
-                <div className="border-border bg-background mx-1 my-1 min-w-0 flex-1 rounded-md border">
-                  <input
-                    ref={linkInputRef}
-                    value={generatedLink}
-                    readOnly
-                    onClick={selectAllText}
-                    className="text-foreground hover:bg-muted/50 w-full cursor-pointer truncate border-none bg-transparent px-3 py-2 font-mono text-xs transition-colors outline-none"
-                    placeholder="Secure link generated..."
-                  />
-                </div>
-                <button
-                  onClick={copyToClipboard}
-                  className="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground mx-1 flex-shrink-0 rounded-md border p-2 transition-all duration-200"
-                  title="Copy to clipboard"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {!isProcessing && !isCompleted && (
-          <div className="absolute right-4 bottom-4">
+      <InteractiveTextarea
+        ref={textareaRef}
+        value={text}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+          setText(e.target.value)
+        }
+        onKeyDown={handleKeyPress}
+        placeholder="Enter your secret..."
+        disabled={isProcessing || isCompleted}
+        hasBackdrop={isProcessing || isCompleted}
+        cornerButton={
+          !isProcessing && !isCompleted ? (
             <Button
               type="submit"
               size="sm"
@@ -310,11 +231,80 @@ export function SecretForm() {
               className="border border-emerald-500/30 bg-emerald-500/20 text-emerald-300 shadow-lg transition-all duration-200 hover:bg-emerald-500/30 hover:text-emerald-200"
               disabled={!text.trim()}
             >
-              <Lock className="mr-2 h-4 w-4" />
-              Encrypt
+              Encrypt & Share
+              <CornerDownLeft className="h-4 w-4" />
             </Button>
+          ) : undefined
+        }
+        backdropClassName={cn(isCompleted && "outline-emerald-500/30")}
+        className="focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+      >
+        {isProcessing ? (
+          <StepAnimation
+            steps={steps}
+            currentStepIndex={currentStepIndex}
+            className="h-full w-full"
+          />
+        ) : isCompleted && !isProcessing && generatedLink ? (
+          <div className="flex h-full w-full items-center justify-center p-4">
+            <div className="mx-4 flex w-full max-w-full items-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+              <div className="flex flex-shrink-0 items-center gap-2 px-3 py-2">
+                <Lock className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div className="border-border bg-background mx-1 my-1 min-w-0 flex-1 rounded-md border">
+                <input
+                  ref={linkInputRef}
+                  value={generatedLink}
+                  readOnly
+                  onClick={selectAllText}
+                  className="text-foreground hover:bg-muted/50 w-full cursor-pointer truncate border-none bg-transparent px-3 py-2 font-mono text-xs transition-colors outline-none"
+                  placeholder="Secure link generated..."
+                />
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground mx-1 flex-shrink-0 rounded-md border p-2 transition-all duration-200"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
-        )}
+        ) : undefined}
+      </InteractiveTextarea>
+
+      {/* Simple Steps */}
+      <div className="mt-12 text-center">
+        <div className="text-muted-foreground mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-2 text-xs">
+          {[
+            "Write secret",
+            "Press Enter",
+            "Encrypt locally",
+            "Share link",
+            "Auto-delete",
+          ].map((step, index, array) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="font-medium">{step}</span>
+              {index < array.length - 1 && (
+                <span className="text-muted-foreground/50">→</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="text-muted-foreground mx-auto mt-4 flex max-w-2xl flex-wrap items-center justify-center gap-2 text-xs">
+          <span className="font-small">
+            <Link
+              href="/how-it-works"
+              className="text-emerald-400 hover:underline"
+            >
+              Learn more
+            </Link>
+          </span>
+        </div>
       </div>
     </>
   );
