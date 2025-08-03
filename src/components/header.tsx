@@ -9,48 +9,49 @@ import { cn } from "~/lib/utils";
 
 export function Header() {
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
   const isHowItWorksPage = pathname === "/how-it-works";
 
   return (
-    <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+    <header className="bg-background/80 sticky top-0 z-50 border-b backdrop-blur-sm">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo/Brand */}
-          <Link 
-            href="/" 
-            className="flex items-center gap-2 text-foreground hover:text-muted-foreground transition-colors"
+          <Link
+            href="/"
+            className="text-foreground hover:text-muted-foreground flex items-center gap-2 transition-colors"
           >
-            <div className="w-8 h-8 bg-emerald-500/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
-              <Lock className="w-4 h-4 text-emerald-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/20">
+              <Lock className="h-4 w-4 text-emerald-400" />
             </div>
             <span className="font-medium">SecretShare</span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden items-center gap-6 md:flex">
             <Link
               href="/how-it-works"
               className={cn(
-                "flex items-center gap-2 text-sm transition-colors hover:text-foreground",
-                isHowItWorksPage ? "text-foreground" : "text-muted-foreground"
+                "hover:text-foreground flex items-center gap-2 text-sm transition-colors",
+                isHowItWorksPage ? "text-foreground" : "text-muted-foreground",
               )}
             >
-              <BookOpen className="w-4 h-4" />
+              <BookOpen className="h-4 w-4" />
               How it works
             </Link>
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {!isHomePage && (
-              <Button asChild size="sm" variant="ghost">
-                <Link href="/">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Secret
-                </Link>
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                window.location.href = "/";
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Secret
+            </Button>
             <ThemeToggle />
           </div>
         </div>

@@ -9,7 +9,6 @@ import { cn } from "~/lib/utils";
 
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-import { Badge } from "~/components/ui/badge";
 import {
   StepAnimation,
   type Step,
@@ -211,26 +210,6 @@ export function SecretForm() {
     }
   };
 
-  const reset = () => {
-    setText("");
-    setIsProcessing(false);
-    setIsCompleted(false);
-    setGeneratedLink("");
-    setCurrentStepIndex(-1);
-    setSteps(
-      encryptionSteps.map((step) => ({
-        ...step,
-        status: "pending" as StepStatus,
-      })),
-    );
-    setCopied(false);
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
-    }, 100);
-  };
-
   return (
     <>
       {/* Header */}
@@ -241,10 +220,10 @@ export function SecretForm() {
             Zero-Knowledge Encryption
           </span>
         </div>
-        <h1 className="mb-4 text-4xl font-light text-white">
+        <h1 className="text-foreground mb-4 text-4xl font-light">
           Share a secret over any chat
         </h1>
-        <p className="text-lg font-light text-gray-400">
+        <p className="text-muted-foreground text-lg font-light">
           End-to-end client encryption, one-time read, no data retention.
         </p>
       </div>
@@ -259,10 +238,10 @@ export function SecretForm() {
               setText(e.target.value)
             }
             onKeyDown={handleKeyPress}
-            placeholder="Enter your message..."
+            placeholder="Enter your secret..."
             rows={4}
             className={cn(
-              "min-h-[120px] resize-y border-gray-800 bg-black text-lg text-white transition-all duration-300 placeholder:text-gray-500 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20",
+              "border-border bg-background text-foreground placeholder:text-muted-foreground min-h-[120px] resize-y text-lg transition-all duration-300 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20",
               isCompleted && "border-emerald-500/30",
             )}
             disabled={isProcessing || isCompleted}
@@ -272,7 +251,7 @@ export function SecretForm() {
           {(isProcessing || isCompleted) && (
             <div
               className={cn(
-                "pointer-events-none absolute inset-0 box-content rounded-md bg-black/10 outline outline-gray-800 backdrop-blur-sm",
+                "bg-background/10 outline-border pointer-events-none absolute inset-0 box-content rounded-md outline backdrop-blur-sm transition-all duration-300",
                 isCompleted && "outline-emerald-500/30",
               )}
             />
@@ -289,14 +268,34 @@ export function SecretForm() {
             </div>
           )}
 
-          {/* Encrypted State */}
-          {isCompleted && !isProcessing && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2">
-                <Lock className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-400">
-                  Encrypted & Secured
-                </span>
+          {/* Encrypted State with URL */}
+          {isCompleted && !isProcessing && generatedLink && (
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="mx-4 flex w-full max-w-full items-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+                <div className="flex flex-shrink-0 items-center gap-2 px-3 py-2">
+                  <Lock className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div className="border-border bg-background mx-1 my-1 min-w-0 flex-1 rounded-md border">
+                  <input
+                    ref={linkInputRef}
+                    value={generatedLink}
+                    readOnly
+                    onClick={selectAllText}
+                    className="text-foreground hover:bg-muted/50 w-full cursor-pointer truncate border-none bg-transparent px-3 py-2 font-mono text-xs transition-colors outline-none"
+                    placeholder="Secure link generated..."
+                  />
+                </div>
+                <button
+                  onClick={copyToClipboard}
+                  className="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground mx-1 flex-shrink-0 rounded-md border p-2 transition-all duration-200"
+                  title="Copy to clipboard"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -317,56 +316,6 @@ export function SecretForm() {
           </div>
         )}
       </div>
-
-      {/* Generated Link Section */}
-      {isCompleted && generatedLink && (
-        <div className="animate-in slide-in-from-bottom-4 space-y-6 duration-500">
-          <div className="text-center">
-            <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
-              <Check className="mr-1 h-3 w-3" />
-              Secure link generated
-            </Badge>
-          </div>
-
-          <div className="bg-card rounded-lg border p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <Link className="text-muted-foreground h-4 w-4" />
-              <span className="text-card-foreground text-sm font-medium">
-                One-time shareable link
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-background flex-1 rounded-md border p-3">
-                <input
-                  ref={linkInputRef}
-                  value={generatedLink}
-                  readOnly
-                  onClick={selectAllText}
-                  className="text-foreground w-full cursor-pointer truncate bg-transparent font-mono text-sm outline-none"
-                />
-              </div>
-              <Button
-                onClick={copyToClipboard}
-                size="sm"
-                variant="outline"
-                className="shrink-0"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <Button onClick={reset} variant="ghost">
-              Create another message
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

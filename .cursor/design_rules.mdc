@@ -1,0 +1,255 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules for SecretShare App
+
+## Design System & Styling
+
+### Tailwind CSS & shadcn/ui Guidelines
+- **ALWAYS** use CSS variables and theme-aware colors from the design system
+- **NEVER** use hardcoded colors like `bg-blue-500`, `text-red-600`, etc.
+- **ALWAYS** use semantic color tokens that work in both light and dark modes
+
+### Approved Color Patterns
+Use these theme-aware color classes:
+
+**Backgrounds:**
+- `bg-background` - Main page background
+- `bg-card` - Card/container backgrounds  
+- `bg-popover` - Overlay/popover backgrounds
+- `bg-muted` - Subtle background areas
+- `bg-accent` - Accent background areas
+
+**Text Colors:**
+- `text-foreground` - Primary text
+- `text-muted-foreground` - Secondary/muted text
+- `text-card-foreground` - Text on card backgrounds
+- `text-popover-foreground` - Text on popover backgrounds
+- `text-accent-foreground` - Text on accent backgrounds
+
+**Borders:**
+- `border-border` - Standard borders
+- `border-input` - Input field borders
+- `border-ring` - Focus ring borders
+
+**Interactive States:**
+- `hover:bg-accent hover:text-accent-foreground` - Standard hover states
+- `hover:bg-muted hover:text-foreground` - Alternative hover pattern
+- `focus:ring-ring` - Focus rings
+- `data-[state=open]:bg-accent` - Active states
+
+**Brand Colors (Current App Palette):**
+- `text-emerald-400`, `text-emerald-300`, `text-emerald-200` - Success/primary actions
+- `border-emerald-500/30`, `bg-emerald-500/20` - Emerald accents with opacity
+- Use emerald colors for primary CTAs and success states
+- Maintain existing dark theme aesthetic
+
+### ❌ Forbidden Patterns
+**NEVER use these patterns:**
+- Hardcoded colors: `bg-blue-500`, `text-red-600`, `border-purple-400`
+- Fixed colors without theme variants: `bg-gray-900`, `text-white` (use semantic tokens instead)
+- CSS color values: `style={{color: '#ff0000'}}`
+- Colors that break in light/dark mode switching
+
+### ✅ Correct Migration Examples
+```jsx
+// ❌ Wrong
+className="bg-gray-900 text-gray-300 border-gray-700"
+
+// ✅ Correct  
+className="bg-background text-muted-foreground border-border"
+
+// ❌ Wrong
+className="hover:bg-gray-800 hover:text-white"
+
+// ✅ Correct
+className="hover:bg-muted hover:text-foreground"
+```
+
+### Component Architecture
+- **ALWAYS** use shadcn/ui components as the foundation
+- Extend components using `cn()` utility for conditional classes
+- Follow the existing component patterns in the codebase
+- Use `className` props for customization, not inline styles
+- Import from `~/components/ui/` for all base components
+
+### Layout & Spacing
+- Use consistent spacing scale: `p-4`, `m-8`, `gap-6`, etc.
+- Follow existing responsive patterns: `md:`, `lg:` breakpoints
+- Use flexbox and grid utilities consistently
+- Maintain consistent border radius: `rounded-md`, `rounded-lg`
+
+### Current App Theming
+This app uses a dark theme with emerald accents:
+- Preserve the existing emerald color scheme for primary actions
+- Use appropriate opacity levels for layering: `/10`, `/20`, `/30`
+- Maintain backdrop blur and glassmorphism effects where present
+- Keep existing animation and transition patterns
+- Support both light and dark modes seamlessly
+
+### Icon Usage
+- Use lucide-react icons consistently
+- Size icons appropriately: `h-4 w-4`, `h-5 w-5`
+- Match icon colors to surrounding text using semantic tokens
+- Use semantic icons that match their function
+
+### Animation & Transitions
+- Use consistent transition classes: `transition-all duration-200`
+- Follow existing animation patterns in the codebase
+- Use appropriate easing and timing
+- Maintain accessibility considerations for animations
+
+## Code Quality
+- Always use TypeScript with proper typing
+- Follow React best practices and hooks patterns
+- Use the existing tRPC and Convex patterns
+- Maintain the zero-knowledge encryption architecture
+- Follow the existing error handling patterns
+
+## File Structure
+- Keep components in `/src/components/`
+- Use the existing folder structure
+- Follow naming conventions: kebab-case for files, PascalCase for components
+- Maintain separation between UI components and business logic
+
+## Accessibility
+- Ensure proper ARIA labels and roles
+- Maintain keyboard navigation
+- Use semantic HTML elements
+- Provide appropriate color contrast using semantic tokens
+- Include focus indicators using `focus:ring-ring`
+
+## Key Reminders
+1. **Theme-first approach**: Every color choice must work in both light and dark modes
+2. **Semantic over specific**: Use `text-muted-foreground` instead of `text-gray-400`
+3. **Consistency**: Follow the patterns established in the existing codebase
+4. **Testing**: Verify all changes work in both light and dark modes
+5. **Performance**: Maintain the existing optimization patterns
+
+The goal is to maintain a consistent, theme-aware design that works perfectly in both light and dark modes while preserving the app's existing emerald accent color scheme and dark aesthetic.# Cursor Rules for SecretShare App
+
+## Design System & Styling
+
+### Tailwind CSS & shadcn/ui Guidelines
+- **ALWAYS** use CSS variables and theme-aware colors from the design system
+- **NEVER** use hardcoded colors like `bg-blue-500`, `text-red-600`, etc.
+- **ALWAYS** use semantic color tokens that work in both light and dark modes
+
+### Approved Color Patterns
+Use these theme-aware color classes:
+
+**Backgrounds:**
+- `bg-background` - Main page background
+- `bg-card` - Card/container backgrounds  
+- `bg-popover` - Overlay/popover backgrounds
+- `bg-muted` - Subtle background areas
+- `bg-accent` - Accent background areas
+
+**Text Colors:**
+- `text-foreground` - Primary text
+- `text-muted-foreground` - Secondary/muted text
+- `text-card-foreground` - Text on card backgrounds
+- `text-popover-foreground` - Text on popover backgrounds
+- `text-accent-foreground` - Text on accent backgrounds
+
+**Borders:**
+- `border-border` - Standard borders
+- `border-input` - Input field borders
+- `border-ring` - Focus ring borders
+
+**Interactive States:**
+- `hover:bg-accent hover:text-accent-foreground` - Standard hover states
+- `hover:bg-muted hover:text-foreground` - Alternative hover pattern
+- `focus:ring-ring` - Focus rings
+- `data-[state=open]:bg-accent` - Active states
+
+**Brand Colors (Current App Palette):**
+- `text-emerald-400`, `text-emerald-300`, `text-emerald-200` - Success/primary actions
+- `border-emerald-500/30`, `bg-emerald-500/20` - Emerald accents with opacity
+- Use emerald colors for primary CTAs and success states
+- Maintain existing dark theme aesthetic
+
+### ❌ Forbidden Patterns
+**NEVER use these patterns:**
+- Hardcoded colors: `bg-blue-500`, `text-red-600`, `border-purple-400`
+- Fixed colors without theme variants: `bg-gray-900`, `text-white` (use semantic tokens instead)
+- CSS color values: `style={{color: '#ff0000'}}`
+- Colors that break in light/dark mode switching
+
+### ✅ Correct Migration Examples
+```jsx
+// ❌ Wrong
+className="bg-gray-900 text-gray-300 border-gray-700"
+
+// ✅ Correct  
+className="bg-background text-muted-foreground border-border"
+
+// ❌ Wrong
+className="hover:bg-gray-800 hover:text-white"
+
+// ✅ Correct
+className="hover:bg-muted hover:text-foreground"
+```
+
+### Component Architecture
+- **ALWAYS** use shadcn/ui components as the foundation
+- Extend components using `cn()` utility for conditional classes
+- Follow the existing component patterns in the codebase
+- Use `className` props for customization, not inline styles
+- Import from `~/components/ui/` for all base components
+
+### Layout & Spacing
+- Use consistent spacing scale: `p-4`, `m-8`, `gap-6`, etc.
+- Follow existing responsive patterns: `md:`, `lg:` breakpoints
+- Use flexbox and grid utilities consistently
+- Maintain consistent border radius: `rounded-md`, `rounded-lg`
+
+### Current App Theming
+This app uses a dark theme with emerald accents:
+- Preserve the existing emerald color scheme for primary actions
+- Use appropriate opacity levels for layering: `/10`, `/20`, `/30`
+- Maintain backdrop blur and glassmorphism effects where present
+- Keep existing animation and transition patterns
+- Support both light and dark modes seamlessly
+
+### Icon Usage
+- Use lucide-react icons consistently
+- Size icons appropriately: `h-4 w-4`, `h-5 w-5`
+- Match icon colors to surrounding text using semantic tokens
+- Use semantic icons that match their function
+
+### Animation & Transitions
+- Use consistent transition classes: `transition-all duration-200`
+- Follow existing animation patterns in the codebase
+- Use appropriate easing and timing
+- Maintain accessibility considerations for animations
+
+## Code Quality
+- Always use TypeScript with proper typing
+- Follow React best practices and hooks patterns
+- Use the existing tRPC and Convex patterns
+- Maintain the zero-knowledge encryption architecture
+- Follow the existing error handling patterns
+
+## File Structure
+- Keep components in `/src/components/`
+- Use the existing folder structure
+- Follow naming conventions: kebab-case for files, PascalCase for components
+- Maintain separation between UI components and business logic
+
+## Accessibility
+- Ensure proper ARIA labels and roles
+- Maintain keyboard navigation
+- Use semantic HTML elements
+- Provide appropriate color contrast using semantic tokens
+- Include focus indicators using `focus:ring-ring`
+
+## Key Reminders
+1. **Theme-first approach**: Every color choice must work in both light and dark modes
+2. **Semantic over specific**: Use `text-muted-foreground` instead of `text-gray-400`
+3. **Consistency**: Follow the patterns established in the existing codebase
+4. **Testing**: Verify all changes work in both light and dark modes
+5. **Performance**: Maintain the existing optimization patterns
+
+The goal is to maintain a consistent, theme-aware design that works perfectly in both light and dark modes while preserving the app's existing emerald accent color scheme and dark aesthetic.
