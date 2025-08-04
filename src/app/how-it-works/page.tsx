@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ExternalLink,
   Info,
+  Clock,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 
 export default function HowItWorksPage() {
   return (
@@ -25,8 +27,13 @@ export default function HowItWorksPage() {
         <div className="mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-16 text-center">
-            <div className="bg-secondary/50 mb-8 inline-flex items-center gap-2 rounded-full border px-4 py-2">
-              <Shield className="text-primary h-4 w-4" />
+            <div
+              className={cn(
+                "mb-8 inline-flex items-center gap-2 rounded-full border px-4 py-2",
+                "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+              )}
+            >
+              <Shield className="h-4 w-4" />
               <span className="text-sm font-medium">Security & Privacy</span>
             </div>
             <h1 className="text-foreground mb-4 text-4xl font-light">
@@ -41,11 +48,11 @@ export default function HowItWorksPage() {
           {/* Use Case Card */}
           <Card className="mb-16">
             <CardContent className="p-8">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 border-primary/20 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg border">
-                  <MessageSquare className="text-primary h-6 w-6" />
+              <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+                  <MessageSquare className="h-6 w-6 text-emerald-400" />
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <h2 className="text-foreground mb-3 text-xl font-medium">
                     Perfect for Sensitive Communications
                   </h2>
@@ -56,7 +63,8 @@ export default function HowItWorksPage() {
                     Share a link containing an end-to-end encrypted secret that
                     can be decoded once (guaranteed), then disappears from our
                     servers forever. The recipient gets secure access while
-                    maintaining complete privacy.
+                    maintaining complete privacy. For added security, secrets
+                    are automatically deleted after 24 hours if not accessed.
                   </p>
                 </div>
               </div>
@@ -65,11 +73,13 @@ export default function HowItWorksPage() {
 
           {/* Free Service Notice */}
           <div className="mb-16 text-center">
-            <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
-              <Info className="h-4 w-4" />
-              This service is completely free — low operational costs mean no
-              ads, no premium plans, just secure secret sharing.
-            </p>
+            <div className="text-muted-foreground mx-6 flex flex-col items-center gap-2 text-sm sm:flex-row sm:justify-center">
+              <Info className="h-5 w-5 sm:h-4 sm:w-4" />
+              <span>
+                This service is completely free — low operational costs mean no
+                ads, no premium plans, just secure secret sharing.
+              </span>
+            </div>
           </div>
 
           {/* Feature Cards */}
@@ -114,11 +124,9 @@ export default function HowItWorksPage() {
                 <CardDescription className="mb-4">
                   Once someone reads the message, it&apos;s permanently deleted
                   from our servers. Only the sender and receiver retain local
-                  copies.
+                  copies. For additional security, unread secrets are also
+                  automatically deleted after 24 hours.
                 </CardDescription>
-                <span className="text-primary text-sm font-medium">
-                  Guaranteed privacy
-                </span>
               </CardContent>
             </Card>
 
@@ -218,6 +226,13 @@ export default function HowItWorksPage() {
                 },
                 {
                   id: 7,
+                  title: "Automatic Expiry Protection",
+                  description:
+                    "If the secret is not accessed within 24 hours of creation, it is automatically deleted from our servers to prevent indefinite exposure risk.",
+                  isTimer: true,
+                },
+                {
+                  id: 8,
                   title: "Malicious Access if Link Leaks",
                   description:
                     "Any other malicious person accessing this same link later, will request the server for the secret payload (that no longer exists) and will show a 404 error page.",
@@ -225,9 +240,20 @@ export default function HowItWorksPage() {
                 },
               ].map((step) => (
                 <div key={step.id} className="flex items-start gap-4 py-2">
-                  <div className="bg-primary/10 text-primary flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                  <div
+                    className={cn(
+                      "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-medium",
+                      step.isWarning
+                        ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                        : step.isTimer
+                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          : "bg-primary/10 text-primary",
+                    )}
+                  >
                     {step.isWarning ? (
                       <AlertTriangle className="h-4 w-4" />
+                    ) : step.isTimer ? (
+                      <Clock className="h-4 w-4" />
                     ) : (
                       step.id
                     )}
