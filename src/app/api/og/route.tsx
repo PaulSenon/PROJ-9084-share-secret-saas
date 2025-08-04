@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
             backgroundColor: "#000000",
             fontFamily: "system-ui, -apple-system, sans-serif",
             position: "relative",
+            padding: "0px 90px",
           }}
         >
           {/* Left side - Main content (2/3) */}
@@ -153,7 +154,7 @@ export async function GET(request: NextRequest) {
           <div
             style={{
               position: "absolute",
-              right: "0",
+              right: "90px",
               top: "0",
               width: "38%",
               height: "100%",
