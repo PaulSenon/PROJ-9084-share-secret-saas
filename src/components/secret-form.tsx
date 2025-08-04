@@ -228,7 +228,7 @@ export function SecretForm() {
               type="submit"
               size="sm"
               onClick={() => void handleSubmit()}
-              className="border border-emerald-500/30 bg-emerald-500/20 text-emerald-300 shadow-lg transition-all duration-200 hover:bg-emerald-500/30 hover:text-emerald-200"
+              className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-lg transition-all duration-200 hover:bg-emerald-500/20 hover:text-emerald-300"
               disabled={!text.trim()}
             >
               Encrypt & Share
