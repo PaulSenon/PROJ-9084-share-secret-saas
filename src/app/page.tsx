@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     description:
       "Share encrypted secrets that can only be viewed once. End-to-end encrypted, zero-knowledge architecture ensures your sensitive information stays private.",
     url: "/",
+    siteName: "Secret Share",
     images: [
       {
         url: "/api/og?title=Secret Share&description=Share encrypted secrets that can only be viewed once&theme=blue",
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
         alt: "Secret Share - Share encrypted secrets securely",
       },
     ],
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",

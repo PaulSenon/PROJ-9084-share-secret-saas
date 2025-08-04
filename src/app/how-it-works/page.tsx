@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     description:
       "Learn how Secret Share protects your sensitive information with end-to-end encryption, zero-knowledge architecture, and one-time access. Military-grade AES-256-GCM encryption.",
     url: "/how-it-works",
+    siteName: "Secret Share",
     images: [
       {
         url: "/api/og?title=How It Works&description=Understanding the security and privacy features that protect your information&theme=green",
@@ -38,6 +39,8 @@ export const metadata: Metadata = {
         alt: "How Secret Share works - Security and Privacy explained",
       },
     ],
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
