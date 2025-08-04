@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type Metadata } from "next";
 import {
   Lock,
   Shield,
@@ -19,6 +20,35 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
+
+export const metadata: Metadata = {
+  title: "How It Works - Secret Share Security & Privacy",
+  description:
+    "Learn how Secret Share protects your sensitive information with end-to-end encryption, zero-knowledge architecture, and one-time access. Military-grade AES-256-GCM encryption.",
+  openGraph: {
+    title: "How It Works - Secret Share Security & Privacy",
+    description:
+      "Learn how Secret Share protects your sensitive information with end-to-end encryption, zero-knowledge architecture, and one-time access. Military-grade AES-256-GCM encryption.",
+    url: "/how-it-works",
+    images: [
+      {
+        url: "/api/og?title=How It Works&description=Understanding the security and privacy features that protect your information&theme=green",
+        width: 1200,
+        height: 630,
+        alt: "How Secret Share works - Security and Privacy explained",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How It Works - Secret Share Security & Privacy",
+    description:
+      "Learn how Secret Share protects your sensitive information with end-to-end encryption, zero-knowledge architecture, and one-time access. Military-grade AES-256-GCM encryption.",
+    images: [
+      "/api/og?title=How It Works&description=Understanding the security and privacy features that protect your information&theme=green",
+    ],
+  },
+};
 
 export default function HowItWorksPage() {
   return (
