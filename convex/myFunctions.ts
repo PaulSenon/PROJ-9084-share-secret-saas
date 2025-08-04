@@ -1,5 +1,7 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
+import ms from "ms";
 
 // Set a secret and return its ID
 export const setSecret = mutation({
@@ -11,7 +13,24 @@ export const setSecret = mutation({
       payload: args.payload,
     });
 
+    // Schedule auto-deletion after 24 hours
+    await ctx.scheduler.runAfter(ms("24h"), internal.myFunctions.unsetPayload, {
+      secretId: id,
+    });
+
     return { id };
+  },
+});
+
+// Internal mutation to delete expired secrets
+export const unsetPayload = internalMutation({
+  args: {
+    secretId: v.id("secrets"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.secretId, {
+      payload: undefined,
+    });
   },
 });
 
