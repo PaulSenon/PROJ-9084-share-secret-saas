@@ -16,7 +16,9 @@ export const metadata: Metadata = {
   description: "Share encrypted secrets that can only be viewed once",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://localhost:3000",
+    process.env.NEXT_PUBLIC_APP_URL ??
+      process.env.VERCEL_URL ??
+      "https://localhost:3000",
   ),
   openGraph: {
     title: "Secret Share",
